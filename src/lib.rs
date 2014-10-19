@@ -1,4 +1,4 @@
-pub mod battle_ship;
+pub mod board;
 
 #[test]
 fn it_works() {
