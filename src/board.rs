@@ -90,13 +90,7 @@ impl Ship for DefaultShip {
     fn hit(&mut self) -> bool {
 
         self.hits += 1;
-
-        if (self.hits >= self.max_hits) {
-
-            return true
-        }
-
-        false
+        self.hits >= self.max_hits
     }
 }
 
