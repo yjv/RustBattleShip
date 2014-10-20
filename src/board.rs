@@ -34,6 +34,16 @@ impl<T: Ship> Board<T> {
            ships: ships
         }
     }
+
+    pub fn all_sunk(&self) -> bool {
+
+        self.ships.len() == 0
+    }
+
+    pub fn fire(&mut self, point: Point) -> FireResult<T> {
+
+        Miss
+    }
 }
 
 pub trait Ship {
@@ -107,4 +117,11 @@ impl Point {
             y: y
         }
     }
+}
+
+pub enum FireResult<T: Ship> {
+
+    Hit,
+    Miss,
+    Sink(T)
 }
