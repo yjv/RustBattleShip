@@ -16,6 +16,11 @@ impl Grid {
             points: range(0, width).map(|_| range(0, height).map(|_| 0).collect()).collect()
         }
     }
+
+    pub fn set(&mut self, point: Point, value: uint) {
+
+        *self.points.get(point.y as uint).get_mut(point.x as uint) = value;
+    }
 }
 
 #[deriving(Show)]
@@ -35,12 +40,32 @@ impl<T: Ship> Board<T> {
         }
     }
 
-    pub fn all_sunk(&self) -> bool {
+    pub fn all_sunk<S: Ship>(&self) -> bool {
 
-        self.ships.len() == 0
+        for ship in self.ships.iter().filter(|ship| !**ship.is_sunk()) {
+
+            return true
+        }
+
+        false
     }
 
     pub fn fire(&mut self, point: Point) -> FireResult<T> {
+
+        for ship in self.ships.iter() {
+
+            if ship.contains(point) {
+
+                self.grid.set(point, 1);
+
+                if ship.hit().is_sunk() {
+
+                    return Sink(*ship)
+                }
+
+                return Hit(*ship)
+            }
+        }
 
         Miss
     }
@@ -49,7 +74,8 @@ impl<T: Ship> Board<T> {
 pub trait Ship {
 
     fn contains(&self, point: Point) -> bool;
-    fn hit(&mut self) -> bool;
+    fn hit(&mut self) -> Self;
+    fn is_sunk() -> bool;
 }
 
 #[deriving(Show)]
@@ -87,9 +113,14 @@ impl Ship for DefaultShip {
         DefaultShip::get_distance(self.point1, point) + DefaultShip::get_distance(point, self.point2) + 1 == self.max_hits
     }
 
-    fn hit(&mut self) -> bool {
+    fn hit(&mut self) -> DefaultShip {
 
         self.hits += 1;
+        self
+    }
+
+    fn is_sunk(&self) -> DefaultShip {
+
         self.hits >= self.max_hits
     }
 }
@@ -115,7 +146,7 @@ impl Point {
 
 pub enum FireResult<T: Ship> {
 
-    Hit,
+    Hit(T),
     Miss,
     Sink(T)
 }
