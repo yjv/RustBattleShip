@@ -3,7 +3,7 @@ pub struct Grid {
 
     pub width: uint,
     pub height: uint,
-    pub points: Vec<Vec<uint>>
+    pub points: Box<Vec<Vec<uint>>>
 }
 
 impl Grid {
@@ -13,7 +13,7 @@ impl Grid {
         Grid {
             width: width,
             height: height,
-            points: range(0, width).map(|_| range(0, height).map(|_| 0).collect()).collect()
+            points: box range(0, width).map(|_| range(0, height).map(|_| 0).collect()).collect()
         }
     }
 
@@ -27,12 +27,12 @@ impl Grid {
 pub struct Board<T: Ship> {
 
     pub grid: Grid,
-    ships: Vec<T>
+    ships: Box<Vec<T>>
 }
 
 impl<T: Ship> Board<T> {
 
-    pub fn new(width: uint, height: uint, ships: Vec<T>) -> Board<T> {
+    pub fn new(width: uint, height: uint, ships: Box<Vec<T>>) -> Board<T> {
 
         Board {
            grid: Grid::new(width, height),
@@ -53,7 +53,7 @@ impl<T: Ship> Board<T> {
 
                 self.grid.set(point, 1);
 
-                if ship.hit().is_sunk() {
+                if ship.hit().hit().is_sunk() {
 
                     return Sink
                 }
@@ -69,7 +69,7 @@ impl<T: Ship> Board<T> {
 pub trait Ship {
 
     fn contains(&self, point: Point) -> bool;
-    fn hit(&mut self) -> Self;
+    fn hit(&mut self) -> &mut Self;
     fn is_sunk(&self) -> bool;
 }
 
@@ -108,10 +108,10 @@ impl Ship for DefaultShip {
         DefaultShip::get_distance(self.point1, point) + DefaultShip::get_distance(point, self.point2) + 1 == self.max_hits
     }
 
-    fn hit(&mut self) -> DefaultShip {
+    fn hit(&mut self) -> &mut DefaultShip {
 
         self.hits += 1;
-        *self
+        self
     }
 
     fn is_sunk(&self) -> bool {
