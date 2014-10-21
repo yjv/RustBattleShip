@@ -3,7 +3,7 @@ pub struct Grid {
 
     pub width: uint,
     pub height: uint,
-    pub points: Vec<Vec<uint>>
+    pub points: Vec<Vec<FireResult>>
 }
 
 impl Grid {
@@ -13,11 +13,11 @@ impl Grid {
         Grid {
             width: width,
             height: height,
-            points: range(0, width).map(|_| range(0, height).map(|_| 0).collect()).collect()
+            points: range(0, width).map(|_| range(0, height).map(|_| None).collect()).collect()
         }
     }
 
-    pub fn set(&mut self, point: Point, value: uint) {
+    pub fn set(&mut self, point: Point, value: FireResult) {
 
         *self.points.get_mut(point.y as uint).get_mut(point.x as uint) = value;
     }
@@ -51,9 +51,9 @@ impl<T: Ship> Board<T> {
 
             if ship.contains(point) {
 
-                self.grid.set(point, 1);
+                self.grid.set(point, Hit);
 
-                if ship.hit().hit().is_sunk() {
+                if ship.hit().is_sunk() {
 
                     return Sink
                 }
@@ -62,6 +62,7 @@ impl<T: Ship> Board<T> {
             }
         }
 
+        self.grid.set(point, Miss);
         Miss
     }
 }
@@ -142,6 +143,7 @@ impl Point {
 #[deriving(Show)]
 pub enum FireResult {
 
+    None,
     Hit,
     Miss,
     Sink
