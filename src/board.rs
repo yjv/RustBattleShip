@@ -19,7 +19,7 @@ impl Grid {
 
     pub fn set(&mut self, point: Point, value: uint) {
 
-        *self.points.get(point.y as uint).get_mut(point.x as uint) = value;
+        *self.points.get_mut(point.y as uint).get_mut(point.x as uint) = value;
     }
 }
 
@@ -40,19 +40,14 @@ impl<T: Ship> Board<T> {
         }
     }
 
-    pub fn all_sunk<S: Ship>(&self) -> bool {
+    pub fn all_sunk(&self) -> bool {
 
-        for ship in self.ships.iter().filter(|ship| !ship.is_sunk()) {
-
-            return true
-        }
-
-        false
+        !self.ships.iter().filter(|ship| !ship.is_sunk()).next().is_some()
     }
 
-    pub fn fire(&mut self, point: Point) -> FireResult<T> {
+    pub fn fire(&mut self, point: Point) -> FireResult {
 
-        for ship in self.ships.iter() {
+        for ship in self.ships.iter_mut() {
 
             if ship.contains(point) {
 
@@ -60,10 +55,10 @@ impl<T: Ship> Board<T> {
 
                 if ship.hit().is_sunk() {
 
-                    return Sink(*ship)
+                    return Sink
                 }
 
-                return Hit(*ship)
+                return Hit
             }
         }
 
@@ -116,7 +111,7 @@ impl Ship for DefaultShip {
     fn hit(&mut self) -> DefaultShip {
 
         self.hits += 1;
-        self
+        *self
     }
 
     fn is_sunk(&self) -> bool {
@@ -144,9 +139,10 @@ impl Point {
     }
 }
 
-pub enum FireResult<T: Ship> {
+#[deriving(Show)]
+pub enum FireResult {
 
-    Hit(T),
+    Hit,
     Miss,
-    Sink(T)
+    Sink
 }
