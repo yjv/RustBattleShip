@@ -3,7 +3,7 @@ pub struct Grid {
 
     pub width: uint,
     pub height: uint,
-    pub points: Box<Vec<Vec<uint>>>
+    pub points: Vec<Vec<uint>>
 }
 
 impl Grid {
@@ -13,7 +13,7 @@ impl Grid {
         Grid {
             width: width,
             height: height,
-            points: box range(0, width).map(|_| range(0, height).map(|_| 0).collect()).collect()
+            points: range(0, width).map(|_| range(0, height).map(|_| 0).collect()).collect()
         }
     }
 
@@ -27,12 +27,12 @@ impl Grid {
 pub struct Board<T: Ship> {
 
     pub grid: Grid,
-    ships: Box<Vec<T>>
+    ships: Vec<T>
 }
 
 impl<T: Ship> Board<T> {
 
-    pub fn new(width: uint, height: uint, ships: Box<Vec<T>>) -> Board<T> {
+    pub fn new(width: uint, height: uint, ships: Vec<T>) -> Board<T> {
 
         Board {
            grid: Grid::new(width, height),

@@ -5,7 +5,7 @@ use battle_ship::board;
 
 fn main() {
 
-    let mut board = board::Board::new(10, 10, box vec![board::DefaultShip::new(
+    let mut board = board::Board::new(10, 10, vec![board::DefaultShip::new(
 
         board::Point::new(1, 2),
         board::Point::new(1, 3)
