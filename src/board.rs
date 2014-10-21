@@ -42,7 +42,7 @@ impl<T: Ship> Board<T> {
 
     pub fn all_sunk<S: Ship>(&self) -> bool {
 
-        for ship in self.ships.iter().filter(|ship| !**ship.is_sunk()) {
+        for ship in self.ships.iter().filter(|ship| !ship.is_sunk()) {
 
             return true
         }
@@ -75,7 +75,7 @@ pub trait Ship {
 
     fn contains(&self, point: Point) -> bool;
     fn hit(&mut self) -> Self;
-    fn is_sunk() -> bool;
+    fn is_sunk(&self) -> bool;
 }
 
 #[deriving(Show)]
@@ -119,7 +119,7 @@ impl Ship for DefaultShip {
         self
     }
 
-    fn is_sunk(&self) -> DefaultShip {
+    fn is_sunk(&self) -> bool {
 
         self.hits >= self.max_hits
     }
