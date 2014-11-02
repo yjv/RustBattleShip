@@ -1,9 +1,11 @@
+use std::collections::HashMap;
+
 #[deriving(Show)]
 pub struct Grid {
 
     pub width: uint,
     pub height: uint,
-    pub points: Vec<Vec<FireResult>>
+    pub points: HashMap<Point, FireResult>
 }
 
 impl Grid {
@@ -13,13 +15,28 @@ impl Grid {
         Grid {
             width: width,
             height: height,
-            points: range(0, width).map(|_| range(0, height).map(|_| None).collect()).collect()
+            points: HashMap::<Point, FireResult>::new()
         }
     }
 
-    pub fn set(&mut self, point: Point, value: FireResult) {
+    pub fn update_point(&mut self, point: Point, value: FireResult) {
 
-        *self.points.get_mut(point.y as uint).get_mut(point.x as uint) = value;
+        self.points.insert(point, value);
+    }
+
+    pub fn is_already_set(&self, point: Point) -> bool {
+
+        self.points.contains_key(&point)
+    }
+
+    pub fn contains(&self, point: Point) -> bool {
+
+        if point.x < 0 || point.y < 0 {
+
+            return false;
+        }
+
+        point.x as uint <= self.width && point.y as uint <= self.height
     }
 }
 
@@ -45,25 +62,31 @@ impl<T: Ship> Board<T> {
         !self.ships.iter().filter(|ship| !ship.is_sunk()).next().is_some()
     }
 
-    pub fn fire(&mut self, point: Point) -> FireResult {
+    pub fn fire(&mut self, point: Point) -> Result<FireResult, FireError> {
+
+        if !self.grid.contains(point) {
+
+            return Err(InvalidSelectionError);
+        }
+
+        if self.grid.is_already_set(point) {
+
+            return Err(AlreadyGuessedError);
+        }
 
         for ship in self.ships.iter_mut() {
 
             if ship.contains(point) {
 
-                self.grid.set(point, Hit);
-
-                if ship.hit().is_sunk() {
-
-                    return Sink
-                }
-
-                return Hit
+                ship.hit();
+                let is_sunk = if ship.is_sunk() { Sunk } else { NotSunk };
+                self.grid.update_point(point, Hit(is_sunk));
+                return Ok(Hit(is_sunk));
             }
         }
 
-        self.grid.set(point, Miss);
-        Miss
+        self.grid.update_point(point, Miss);
+        Ok(Miss)
     }
 }
 
@@ -121,7 +144,7 @@ impl Ship for DefaultShip {
     }
 }
 
-#[deriving(Show)]
+#[deriving(PartialEq,Eq,Hash,Show)]
 pub struct Point {
 
     pub x: int,
@@ -143,8 +166,20 @@ impl Point {
 #[deriving(Show)]
 pub enum FireResult {
 
-    None,
-    Hit,
-    Miss,
-    Sink
+    Hit(IsSunk),
+    Miss
+}
+
+#[deriving(Show)]
+pub enum FireError {
+
+    InvalidSelectionError,
+    AlreadyGuessedError
+}
+
+#[deriving(Show)]
+pub enum IsSunk {
+
+    Sunk,
+    NotSunk
 }
