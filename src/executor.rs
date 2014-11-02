@@ -138,7 +138,9 @@ impl <T: Input, U: Output<V>, V: board::Ship> Executor<T, U, V> {
             self.output.turn(turns, max_turns);
             self.output.grid(&self.board.grid);
 
-            match self.board.fire(self.input.get_point()) {
+            let result = self.board.fire(self.input.get_point());
+
+            match result {
 
                 Ok(board::Hit(board::NotSunk)) => self.output.hit(),
                 Ok(board::Hit(board::Sunk)) => self.output.sink(),
@@ -146,6 +148,11 @@ impl <T: Input, U: Output<V>, V: board::Ship> Executor<T, U, V> {
                 Err(board::InvalidSelectionError) => self.output.error(String::from_str("that's not even in the ocean")),
                 Err(board::AlreadyGuessedError) => self.output.error(String::from_str("you guessed that one already"))
             };
+
+            if !result.is_ok() {
+
+                continue;
+            }
 
             if self.board.all_sunk() {
 
