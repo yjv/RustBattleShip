@@ -10,7 +10,7 @@ fn main() {
 
         board::Point::new(1, 2),
         board::Point::new(1, 3)
-    )]), executor::CliInput::new(), executor::CliOutput::new());
+    )]), executor::StdinInput::new(), executor::StdoutOutput::new());
 
     executor.execute(10);
 }

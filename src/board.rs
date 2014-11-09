@@ -19,14 +19,19 @@ impl Grid {
         }
     }
 
-    pub fn update_point(&mut self, point: Point, value: FireResult) {
+    pub fn update_point(&mut self, point: Point, result: FireResult) {
 
-        self.points.insert(point, value);
+        self.points.insert(point, result);
     }
 
     pub fn is_already_set(&self, point: Point) -> bool {
 
         self.points.contains_key(&point)
+    }
+
+    pub fn get_result(&self, point: Point) -> Option<&FireResult> {
+
+        self.points.get(&point)
     }
 
     pub fn contains(&self, point: Point) -> bool {

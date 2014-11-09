@@ -6,17 +6,17 @@ pub trait Input {
     fn get_point(&self) -> board::Point;
 }
 
-pub struct CliInput;
+pub struct StdinInput;
 
-impl CliInput {
+impl StdinInput {
 
-    pub fn new() -> CliInput {
+    pub fn new() -> StdinInput {
 
-        CliInput
+        StdinInput
     }
 }
 
-impl Input for CliInput {
+impl Input for StdinInput {
 
     fn get_point(&self) -> board::Point {
 
@@ -42,21 +42,21 @@ pub trait Output<T: board::Ship> {
     fn miss(&self);
     fn lost(&self);
     fn won(&self);
-    fn error(&self, message: String);
+    fn error(&self, message: &str);
     fn turn(&self, turn: uint, max_turn: uint);
 }
 
-pub struct CliOutput;
+pub struct StdoutOutput;
 
-impl CliOutput {
+impl StdoutOutput {
 
-    pub fn new() -> CliOutput {
+    pub fn new() -> StdoutOutput {
 
-        CliOutput
+        StdoutOutput
     }
 }
 
-impl <T: board::Ship> Output<T> for CliOutput {
+impl <T: board::Ship> Output<T> for StdoutOutput {
 
     fn welcome(&self, board: &board::Board<T>) {
 
@@ -69,7 +69,21 @@ impl <T: board::Ship> Output<T> for CliOutput {
 
     fn grid(&self, grid: &board::Grid) {
 
-        println!("{}", grid);
+        let grid_string = range(0, grid.height - 1).fold(
+            String::new(),
+            |mut string, row|
+                { string.push_str(range(0, grid.width - 1).fold(
+                    String::new(),
+                    |mut string, column| { string.push_str(
+                        match grid.get_result(board::Point{x: column as int, y: row as int}) {
+                            Some(&board::Miss) => "o",
+                            Some(&board::Hit(_)) => "x",
+                            None => "-"
+                        }
+                    ); string.push_str(" "); string }
+                ).as_slice()); string.push_str("\n"); string }
+        );
+        println!("{}", grid_string);
     }
 
     fn hit(&self) {
@@ -97,7 +111,7 @@ impl <T: board::Ship> Output<T> for CliOutput {
         println!("Congratulations! You sunk all my battleships!");
     }
 
-    fn error(&self, message: String) {
+    fn error(&self, message: &str) {
 
         println!("Oops, {}", message);
     }
@@ -145,8 +159,8 @@ impl <T: Input, U: Output<V>, V: board::Ship> Executor<T, U, V> {
                 Ok(board::Hit(board::NotSunk)) => self.output.hit(),
                 Ok(board::Hit(board::Sunk)) => self.output.sink(),
                 Ok(board::Miss) => self.output.miss(),
-                Err(board::InvalidSelectionError) => self.output.error(String::from_str("that's not even in the ocean")),
-                Err(board::AlreadyGuessedError) => self.output.error(String::from_str("you guessed that one already"))
+                Err(board::InvalidSelectionError) => self.output.error("that's not even in the ocean"),
+                Err(board::AlreadyGuessedError) => self.output.error("you guessed that one already")
             };
 
             if !result.is_ok() {
@@ -157,6 +171,7 @@ impl <T: Input, U: Output<V>, V: board::Ship> Executor<T, U, V> {
             if self.board.all_sunk() {
 
                 self.output.won();
+                self.output.grid(&self.board.grid);
                 break;
             }
 
