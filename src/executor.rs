@@ -76,8 +76,8 @@ impl <T: board::Ship> Output<T> for StdoutOutput {
                     String::new(),
                     |mut string, column| { string.push_str(
                         match grid.get_result(board::Point{x: column as int, y: row as int}) {
-                            Some(&board::Miss) => "o",
-                            Some(&board::Hit(_)) => "x",
+                            Some(&board::FireResult::Miss) => "o",
+                            Some(&board::FireResult::Hit(_)) => "x",
                             None => "-"
                         }
                     ); string.push_str(" "); string }
@@ -156,11 +156,11 @@ impl <T: Input, U: Output<V>, V: board::Ship> Executor<T, U, V> {
 
             match result {
 
-                Ok(board::Hit(board::NotSunk)) => self.output.hit(),
-                Ok(board::Hit(board::Sunk)) => self.output.sink(),
-                Ok(board::Miss) => self.output.miss(),
-                Err(board::InvalidSelectionError) => self.output.error("that's not even in the ocean"),
-                Err(board::AlreadyGuessedError) => self.output.error("you guessed that one already")
+                Ok(board::FireResult::Hit(board::IsSunk::NotSunk)) => self.output.hit(),
+                Ok(board::FireResult::Hit(board::IsSunk::Sunk)) => self.output.sink(),
+                Ok(board::FireResult::Miss) => self.output.miss(),
+                Err(board::FireError::InvalidSelectionError) => self.output.error("that's not even in the ocean"),
+                Err(board::FireError::AlreadyGuessedError) => self.output.error("you guessed that one already")
             };
 
             if !result.is_ok() {

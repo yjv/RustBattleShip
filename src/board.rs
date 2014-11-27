@@ -71,12 +71,12 @@ impl<T: Ship> Board<T> {
 
         if !self.grid.contains(point) {
 
-            return Err(InvalidSelectionError);
+            return Err(FireError::InvalidSelectionError);
         }
 
         if self.grid.is_already_set(point) {
 
-            return Err(AlreadyGuessedError);
+            return Err(FireError::AlreadyGuessedError);
         }
 
         for ship in self.ships.iter_mut() {
@@ -84,14 +84,14 @@ impl<T: Ship> Board<T> {
             if ship.contains(point) {
 
                 ship.hit();
-                let is_sunk = if ship.is_sunk() { Sunk } else { NotSunk };
-                self.grid.update_point(point, Hit(is_sunk));
-                return Ok(Hit(is_sunk));
+                let is_sunk = if ship.is_sunk() { IsSunk::Sunk } else { IsSunk::NotSunk };
+                self.grid.update_point(point, FireResult::Hit(is_sunk));
+                return Ok(FireResult::Hit(is_sunk));
             }
         }
 
-        self.grid.update_point(point, Miss);
-        Ok(Miss)
+        self.grid.update_point(point, FireResult::Miss);
+        Ok(FireResult::Miss)
     }
 }
 
